@@ -6,9 +6,14 @@
 # https://doc.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+'''
+This class creates the neccessary fields for an article of the news sites I
+choose to crawl. To categorize properly, the article title, publishing date,
+text are considered.
+'''
 
 
-class NewscrawlItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class Article(scrapy.Item):
+    title = scrapy.Field()
+    date = scrapy.Field()
+    text = scrapy.Field()
