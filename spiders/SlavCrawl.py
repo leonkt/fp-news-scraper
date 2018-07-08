@@ -1,6 +1,6 @@
 import scrapy
-from scrapy import ItemLoader
-from item import Article
+from scrapy.loader import ItemLoader
+from NewsCrawl.items import Article
 
 
 class help_fp(scrapy.Spider):
