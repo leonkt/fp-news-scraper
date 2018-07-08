@@ -7,8 +7,8 @@
 
 import scrapy
 '''
-This class creates the neccessary fields for an article of the news sites I
-choose to crawl. To categorize properly, the article title, publishing date,
+This class creates the neccessary fields for an article of the news sites
+to crawl. To categorize properly, the article title, publishing date,
 text are considered.
 '''
 
