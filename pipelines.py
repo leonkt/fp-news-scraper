@@ -1,31 +1,47 @@
 from scrapy.exceptions import DropItem
-from scrapy.exporters import CsvItemExporter
+import pymongo
+from scrapy.conf import settings
+from scrapy import log
 
 
 class NewscrawlPipeline(object):
+
     def __init__(self):
-        self.visited = set()
+        """
+        Establish a connection with the MongoDB server before writing to the
+        database. Takes preconfigured settings from the settings.py module.
+        """
+
+        connection = pymongo.MongoClient(settings['MONGODB_SERVER'],
+                                         settings['MONGODB_PORT'])
+        self.db = connection[settings['MONGODB_DB']]
+        self.collection = self.db[settings['MONGODB_COLLECTION']]
 
     def process_item(self, item, spider):
-        file = open("/lkt/NewsCrawl/for_mycsvs/{0}.csv".format(item['title']),
-                    'wb')
-        exp = CsvItemExporter(file, unicode)
-        exp.start_exporting()
-        if len(item['text']) == 0:
-            raise DropItem("The text was not present for %s\n" % item['title'])
-        if(item['title'] in self.visited):
+        """
+        Validates and sanitizes malformed data by checking if there is a found
+        text or title. If the data is valid (there is substantial text and a
+        title), then we join the paragraphs and write the item to the database.
+        """
+
+        if len(item['text']) == 0 or len(item['author']) == 0:
+            raise DropItem("The text or title was not present for\
+                            %s\n" % item['title'])
+        if(self.db.find_one({"title": item['title']}) is not None):
             raise DropItem("This is a duplicate %s\n" % item['title'])
         self.join_text(item)
-        self.visited.add(item['title'])
-        exp.export_item(item)
+        self.collection.insert(dict(item))
+        log.msg("Slav fun!", level=log.DEBUG, spider=spider)
         return item
 
-    """
-    This joins all elements of a given list of paragraphs in a coherent way to
-    resemble an actual formatted news article.
-    """
     def join_text(self, item):
-        joined = ""
+        """
+        Joins the elements of the text field in a given article. Creates a more
+        compact and uniform representation of text across various articles,
+        esp. those with different num. of paragraphs.
+        """
+
+        long_art = ""
         for paragraph in item['text']:
-            joined += paragraph + "\n"
-        item['text'] = joined
+            long_art += paragraph + "\n"
+        item['text'] = [long_art]
