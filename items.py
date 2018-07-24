@@ -17,3 +17,4 @@ class Article(scrapy.Item):
     title = scrapy.Field()
     date = scrapy.Field()
     text = scrapy.Field()
+    tags = scrapy.Field()
