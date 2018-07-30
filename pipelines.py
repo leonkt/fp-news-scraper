@@ -1,7 +1,12 @@
-from scrapy.exceptions import DropItem
+from TagClassifier import TagClassifier as tc
+
 import pymongo
-from scrapy.conf import settings
+
 from scrapy import log
+
+from scrapy.conf import settings
+
+from scrapy.exceptions import DropItem
 
 
 class NewscrawlPipeline(object):
@@ -23,14 +28,18 @@ class NewscrawlPipeline(object):
         text or title. If the data is valid (there is substantial text and a
         title), then we join the paragraphs and write the item to the database.
         """
-
+        t = tc.TagClassifier(item['text'])
         if len(item['text']) == 0 or len(item['author']) == 0:
             raise DropItem("The text or title was not present for\
                             %s\n" % item['title'])
         if(self.db.find_one({"title": item['title']}) is not None):
             raise DropItem("This is a duplicate %s\n" % item['title'])
         self.join_text(item)
-        self.collection.insert(dict(item))
+        self.collection.insert(dict(item)
+        if(t.perf_km() == 0):
+            item['tag'] = "cons"
+        else:
+            item['tag'] = "lib"
         log.msg("Slav fun!", level=log.DEBUG, spider=spider)
         return item
 
