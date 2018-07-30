@@ -37,9 +37,9 @@ class NewscrawlPipeline(object):
         self.join_text(item)
         self.collection.insert(dict(item)
         if(t.perf_km() == 0):
-            item['tag'] = "cons"
+            item['tags'] = "cons"
         else:
-            item['tag'] = "lib"
+            item['tags'] = "lib"
         log.msg("Slav fun!", level=log.DEBUG, spider=spider)
         return item
 
